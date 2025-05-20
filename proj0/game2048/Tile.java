@@ -55,6 +55,9 @@ public class Tile {
         next = otherTile.next = new Tile(2 * value, col, row);
         return next;
     }
+    /** 合并两个滑块，并返回获得的滑块，将获得的滑块放到棋盘的(C,R)上*/
+
+
 
     /** Return the distance in rows or columns between me and my successor
      *  tile (0 if I have no successor). */

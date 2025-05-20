@@ -103,6 +103,10 @@ public class Board implements Iterable<Tile> {
         }
     }
 
+    /**也就是说 move方法会检查在当前视角下滑块是否在目标位置，如果在，返回 False，如果不在，将原位置的滑块拿走（原位置变为 null），则
+     * （1）目标位置为空，则将滑块放入
+     * （2）目标位置非空，则合并！！！！（没有判断是否能够合并，出现了 video上怪异的合并问题）*/
+
     @Override
     /** Returns the board as a string, used for debugging. */
     public String toString() {

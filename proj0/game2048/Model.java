@@ -113,13 +113,108 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
-
+        /** 如果我要从向上移动开始，那么需要考虑什么？  (1)怪异的合并->向该方向运动时遍历该方向 如果“碰壁”(不同值或者已经合并过)，回退到上一个 null
+         *                                     (2)如何将向上的情况推及到所有方向？->   ok
+         *                                     (3)分数如何更新？(也许可以放到后面考虑)-> *2? ->怎么合并
+         *                                     (4)如何获取最后的位置？*/
+        this.board.setViewingPerspective(side);
+        String beforeBoard = this.toString();
         checkGameOver();
+        DealAllRow();
+        String afterBoard = this.toString();
+        // 这里的 changed 变量是用来判断是否发生了变化
+        // 通过比较 beforeBoard 和 afterBoard
+
+        if (!beforeBoard.equals(afterBoard)) {
+            changed = true;
+        }
+        this.board.setViewingPerspective(Side.NORTH);
         if (changed) {
             setChanged();
         }
         return changed;
     }
+    /** 处理所有列 */
+    private void DealAllRow(){
+        for(int i = 0;i <= size() - 1;i++){
+            // 在这里初始化 CheckArr 数组
+            CheckArr = new int[board.size()];
+            DealOneRow(i);
+        }
+    }
+    /**重新编写 这是一个处理向上情况的对于单列的函数*/
+    private void DealOneRow(int i){
+        for(int j = size()-2;j >= 0;j--) {
+            //处理完了该处位置为null的情况
+            if(CheckNull(i,j)){
+                continue;
+            }
+            //处理完了向上全为null的情况
+            if(CheckRowNull(i,j)){
+                board.move(i,size()-1,board.tile(i,j));
+                continue;
+            }
+            //处理完了向上有不同值的tile的情况
+            int TargeRow = ReturnRow(i,j);
+            if(NotEqualTile(i,j)){
+                board.move(i,TargeRow-1,board.tile(i,j));
+            }
+            //处理值相同的情况->(1)前面已经发生了合并，(1)前面没发生合并
+            else{
+                if(CheckArr[TargeRow] == 0){
+                    score += board.tile(i,j).value() * 2;
+                    CheckArr[TargeRow] = 1;
+                    board.move(i,TargeRow,board.tile(i,j));
+                }
+                else{
+                    board.move(i,TargeRow-1,board.tile(i,j));
+                }
+            }
+        }
+    }
+    /** 检查某个位置是否为null*/
+    private boolean CheckNull(int i ,int j){
+        return board.tile(i, j) == null;
+    }
+
+    /** ��上检查是否全为null*/
+    //现在有了一个可以判断某个滑块上方是否都为空的函数
+    private boolean CheckRowNull(int i,int j){
+        while(j < size() - 1){
+            if(board.tile(i,j+1) != null){
+                return false;
+            }
+            else{j +=1;}
+        }
+        return true;
+    }
+    /** 向上检查有“墙壁”,应该返回"墙壁"的坐标值*/
+    private int ReturnRow(int i,int j){
+        while(j < size() - 1){
+            if(board.tile(i,j+1) != null){
+                break;
+                //此时的（i,j）是“墙壁”的坐标，处理
+            }
+            else{j += 1;}
+        }
+        return j+1;
+    }
+    /** 已经无需考虑该值为null，或者向上有null的情况 */
+    private boolean NotEqualTile(int i,int j){
+        return board.tile(i, j).value() != board.tile(i, ReturnRow(i, j)).value();
+    }
+    /**处理值相同的情况->(1)前面已经发生了合并，(2)前面没发生合并
+     * 创建一个能够记录是否发生过合并的函数，这个函数在每列调用时候更新*/
+    private int[] CheckArr;  // 只声明，不立即初始化
+    /** 创建一个函数使得如果有发生合并，修改CheckArr*/
+    private void ChangeCheckArr(int j){
+        CheckArr[j] = 1;
+    }
+
+
+
+
+
 
     /** Checks if the game is over and sets the gameOver variable
      *  appropriately.
@@ -138,6 +233,13 @@ public class Model extends Observable {
      * */
     public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
+        for(int i = 0;i < b.size(); i++) {
+            for(int j = 0;j < b.size();j++) {
+                if(b.tile(i,j) == null){
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -148,6 +250,18 @@ public class Model extends Observable {
      */
     public static boolean maxTileExists(Board b) {
         // TODO: Fill in this function.
+        for(int i = 0;i < b.size(); i++) {
+            for(int j = 0;j < b.size();j++) {
+                if(b.tile(i,j) == null)
+                {
+                    continue;
+                }
+                if(b.tile(i,j).value() == MAX_PIECE)
+                {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -158,10 +272,33 @@ public class Model extends Observable {
      * 2. There are two adjacent tiles with the same value.
      */
     public static boolean atLeastOneMoveExists(Board b) {
-        // TODO: Fill in this function.
+        // TODO: Fill in this function
+        if(help_exists_check(0,0, b,0))
+        {
+            return true;
+        }
         return false;
     }
-
+    private static boolean help_exists_check(int i,int j,Board b,int check_value){
+        if(b.tile(i,j) == null || b.tile(i,j).value() == check_value) {
+            return true;
+        }
+        else{
+            boolean result1 = false,result2 = false;
+            if(i+1 < b.size()) {
+                result1 = help_exists_check(i+1,j, b,b.tile(i,j).value());
+            }
+            if(j+1 < b.size()){
+                result2 = help_exists_check(i,j+1, b,b.tile(i,j).value());
+            }
+            if(result1 || result2){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+    }
 
     @Override
      /** Returns the model as a string, used for debugging. */
@@ -201,3 +338,4 @@ public class Model extends Observable {
         return toString().hashCode();
     }
 }
+
