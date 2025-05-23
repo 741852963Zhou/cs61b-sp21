@@ -2,7 +2,7 @@ package IntList;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
-
+//5->0->35->0->10->0
 public class SetToZeroIfMaxFELTest {
 
     @Test
