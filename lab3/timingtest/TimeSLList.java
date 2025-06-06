@@ -23,6 +23,32 @@ public class TimeSLList {
 
     public static void timeGetLast() {
         // TODO: YOUR CODE HERE
+        AList<Integer> Ns = new AList<Integer>();
+        AList<Double> times = new AList<Double>();
+        AList<Integer> opCounts = new AList<Integer>();
+        for(int i = 1000;i <= 64000;i = i*2){
+            //创建一个临时SLList
+            SLList<Integer> current = new SLList<Integer>();
+            //处理addLast操作
+            for(int j = 0;j <= i;j++){
+                current.addLast(1);
+            }
+            //创建计时器
+            Stopwatch sw = new Stopwatch();
+            //处理getLast
+            for(int j = 0;j <= 10000;j++)
+            {
+                current.getLast();
+            }
+            //存储时间
+            double timeTaken = sw.elapsedTime();
+            //向之前的SLList传递数据
+            Ns.addLast(i);
+            times.addLast(timeTaken);
+            opCounts.addLast(10000);
+        }
+        //print输出
+        printTimingTable(Ns,times,opCounts);
     }
 
 }

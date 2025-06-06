@@ -106,111 +106,95 @@ public class Model extends Observable {
      *    value, then the leading two tiles in the direction of motion merge,
      *    and the trailing tile does not.
      * */
+    /**
+     * 将棋盘向 SIDE 方向倾斜。如果此操作改变了棋盘，则返回 true。
+     *
+     * 规则:
+     * 1. 瓷砖尽可能地滑动。
+     * 2. 如果两个相邻（在移动方向上）的瓷砖具有相同的值，
+     * 它们会合并。
+     * 3. 一个合并后的瓷砖在同一次倾斜中不能再次合并。
+     * 4. 合并会增加分数。
+     * 5. 对于三个相同值的瓷砖，移动方向上更远的瓷砖会先合并。
+     */
     public boolean tilt(Side side) {
-        boolean changed;
-        changed = false;
+        boolean changed = false; // 跟踪变化的唯一方法。
+        board.setViewingPerspective(side); // 设置棋盘视角，这是一个好主意，保留它。
 
-        // TODO: Modify this.board (and perhaps this.score) to account
-        // for the tilt to the Side SIDE. If the board changed, set the
-        // changed local variable to true.
-        /** 如果我要从向上移动开始，那么需要考虑什么？  (1)怪异的合并->向该方向运动时遍历该方向 如果“碰壁”(不同值或者已经合并过)，回退到上一个 null
-         *                                     (2)如何将向上的情况推及到所有方向？->   ok
-         *                                     (3)分数如何更新？(也许可以放到后面考虑)-> *2? ->怎么合并
-         *                                     (4)如何获取最后的位置？*/
-        this.board.setViewingPerspective(side);
-        String beforeBoard = this.toString();
-        checkGameOver();
-        DealAllRow();
-        String afterBoard = this.toString();
-        // 这里的 changed 变量是用来判断是否发生了变化
-        // 通过比较 beforeBoard 和 afterBoard
-
-        if (!beforeBoard.equals(afterBoard)) {
-            changed = true;
+        // 处理每一列（因为我们总是朝北看）
+        for (int c = 0; c < board.size(); c++) {
+            if (processColumn(c)) {
+                changed = true; // 如果 *任何* 列发生变化，则棋盘发生变化。
+            }
         }
-        this.board.setViewingPerspective(Side.NORTH);
+
+        board.setViewingPerspective(Side.NORTH); // 重置视角，很好。
+
+        checkGameOver(); // 在移动 *之后* 检查游戏是否结束。
+
         if (changed) {
-            setChanged();
+            setChanged(); // 仅在需要时通知观察者。
         }
         return changed;
     }
-    /** 处理所有列 */
-    private void DealAllRow(){
-        for(int i = 0;i <= size() - 1;i++){
-            // 在这里初始化 CheckArr 数组
-            CheckArr = new int[board.size()];
-            DealOneRow(i);
-        }
-    }
-    /**重新编写 这是一个处理向上情况的对于单列的函数*/
-    private void DealOneRow(int i){
-        for(int j = size()-2;j >= 0;j--) {
-            //处理完了该处位置为null的情况
-            if(CheckNull(i,j)){
-                continue;
-            }
-            //处理完了向上全为null的情况
-            if(CheckRowNull(i,j)){
-                board.move(i,size()-1,board.tile(i,j));
-                continue;
-            }
-            //处理完了向上有不同值的tile的情况
-            int TargeRow = ReturnRow(i,j);
-            if(NotEqualTile(i,j)){
-                board.move(i,TargeRow-1,board.tile(i,j));
-            }
-            //处理值相同的情况->(1)前面已经发生了合并，(1)前面没发生合并
-            else{
-                if(CheckArr[TargeRow] == 0){
-                    score += board.tile(i,j).value() * 2;
-                    CheckArr[TargeRow] = 1;
-                    board.move(i,TargeRow,board.tile(i,j));
-                }
-                else{
-                    board.move(i,TargeRow-1,board.tile(i,j));
-                }
-            }
-        }
-    }
-    /** 检查某个位置是否为null*/
-    private boolean CheckNull(int i ,int j){
-        return board.tile(i, j) == null;
-    }
 
-    /** ��上检查是否全为null*/
-    //现在有了一个可以判断某个滑块上方是否都为空的函数
-    private boolean CheckRowNull(int i,int j){
-        while(j < size() - 1){
-            if(board.tile(i,j+1) != null){
-                return false;
-            }
-            else{j +=1;}
-        }
-        return true;
-    }
-    /** 向上检查有“墙壁”,应该返回"墙壁"的坐标值*/
-    private int ReturnRow(int i,int j){
-        while(j < size() - 1){
-            if(board.tile(i,j+1) != null){
-                break;
-                //此时的（i,j）是“墙壁”的坐标，处理
-            }
-            else{j += 1;}
-        }
-        return j+1;
-    }
-    /** 已经无需考虑该值为null，或者向上有null的情况 */
-    private boolean NotEqualTile(int i,int j){
-        return board.tile(i, j).value() != board.tile(i, ReturnRow(i, j)).value();
-    }
-    /**处理值相同的情况->(1)前面已经发生了合并，(2)前面没发生合并
-     * 创建一个能够记录是否发生过合并的函数，这个函数在每列调用时候更新*/
-    private int[] CheckArr;  // 只声明，不立即初始化
-    /** 创建一个函数使得如果有发生合并，修改CheckArr*/
-    private void ChangeCheckArr(int j){
-        CheckArr[j] = 1;
-    }
+    /**
+     * 假设视角为北（NORTH），处理单一一列 (c)。
+     * 瓷砖向上移动（朝向 size - 1）。
+     * 如果列被改变，则返回 true。
+     */
+    private boolean processColumn(int c) {
+        boolean columnChanged = false; // 标志位，跟踪此列是否发生变化。
+        // 跟踪某个行的瓷砖是否在 *此轮* 倾斜中 *已经* 合并过。
+        // 这是一个局部变量，不是糟糕的实例变量。
+        boolean[] merged = new boolean[board.size()];
 
+        // 我们从第二顶行（size - 2）向下迭代。
+        // 为什么？因为下面的瓷砖需要根据上面的情况来决定去哪里。
+        for (int r = board.size() - 2; r >= 0; r--) {
+            Tile t = board.tile(c, r); // 获取当前位置的瓷砖。
+
+            if (t == null) {
+                continue; // 没有瓷砖可以移动。
+            }
+
+            int targetRow = r; // 从当前行开始。
+
+            // --- 步骤 1: 滑动 (规则 1) ---
+            // 找到这个瓷砖能滑到的最高行。
+            // 当它碰到顶部或另一个瓷砖时停止。
+            while (targetRow + 1 < board.size() && board.tile(c, targetRow + 1) == null) {
+                targetRow++;
+            }
+
+            // --- 步骤 2: 检查合并 (规则 2 & 3) ---
+            // 现在，`targetRow` 是最高的空位（或当前位置）。
+            // 让我们检查是否可以与它 *上方* 的瓷砖合并。
+            int nextRow = targetRow + 1; // 上方的行。
+            if (nextRow < board.size()) { // 检查是否在棋盘内。
+                Tile above = board.tile(c, nextRow); // 获取上方的瓷砖。
+                // 检查合并条件：值相同 并且 上方的瓷砖 *尚未* 合并。
+                if (above.value() == t.value() && !merged[nextRow]) {
+                    // --- 执行合并 ---
+                    board.move(c, nextRow, t); // 移动并合并。
+                    score += t.value() * 2; // 更新分数 (规则 4)。
+                    merged[nextRow] = true;   // 标记为已合并 (规则 3)。
+                    columnChanged = true;     // 棋盘已改变。
+                    continue; // 处理这个瓷砖完毕，继续下一个。
+                }
+            }
+
+            // --- 步骤 3: 移动 (如果没合并但滑动了) ---
+            // 如果我们没有合并，但可以向上移动（`targetRow` 不是原来的 `r`）。
+            if (targetRow != r) {
+                // 是的，移动到最高的空位。
+                board.move(c, targetRow, t);
+                columnChanged = true; // 棋盘已改变。
+            }
+            // 如果我们没有合并也没有移动，什么也不发生，changed 保持 false。
+        }
+        return columnChanged; // 返回此列是否发生了变化。
+    }
 
 
 
