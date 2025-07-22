@@ -98,24 +98,30 @@ public class ArrayDeque<T> implements Deque<T>,Iterable<T>{
 
     @Override
     public T removeFirst() {
-        int first = (nextFirst+1)%array.length;
-        T FirstItem = array[first];
-        array[first] = null;
-        nextFirst = (array.length + nextFirst + 1) % array.length;
-        size--;
-        RemoveResize(size);
-        return FirstItem;
+        if(size>0) {
+            int first = (nextFirst+1)%array.length;
+            T FirstItem = array[first];
+            array[first] = null;
+            nextFirst = (array.length + nextFirst + 1) % array.length;
+            size--;
+            RemoveResize(size);
+            return FirstItem;
+        }
+        return null;
     }
 
     @Override
     public T removeLast() {
-        int Last = (nextLast-1+array.length)%array.length;
-        T LastItem = array[Last];
-        array[Last] = null;
-        nextLast = (nextLast - 1 + array.length) % array.length;;
-        size--;
-        RemoveResize(size);
-        return LastItem;
+        if(size>0){
+            int Last = (nextLast-1+array.length)%array.length;
+            T LastItem = array[Last];
+            array[Last] = null;
+            nextLast = (nextLast - 1 + array.length) % array.length;;
+            size--;
+            RemoveResize(size);
+            return LastItem;
+        }
+        return null;
     }
 
     @Override

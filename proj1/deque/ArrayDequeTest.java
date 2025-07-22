@@ -40,10 +40,10 @@ public class ArrayDequeTest {
     @Test
     public void sizeTest(){
         ArrayDeque<Integer> a = new ArrayDeque<>();
-        a.addFirst(1);
-        a.addFirst(2);
+        a.removeLast();
+        a.removeLast();
         a.addFirst(3);
-        assertEquals(3,a.size());
+        assertEquals(1,a.size());
     }
     @Test
     public void RemoveFirstTest(){
