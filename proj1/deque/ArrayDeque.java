@@ -4,10 +4,10 @@ import java.util.Iterator;
 
 public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
 
-    protected int size;
-    protected T[] array;
-    protected int nextFirst;
-    protected int nextLast;
+    private int size;
+    private T[] array;
+    private int nextFirst;
+    private int nextLast;
 
     public ArrayDeque() {
         size = 0;
@@ -81,7 +81,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
 
     @Override
     public boolean isEmpty() {
-        return size == 0;
+        return this.size() == 0;
     }
 
     @Override
