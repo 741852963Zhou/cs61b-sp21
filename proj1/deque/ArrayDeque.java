@@ -17,18 +17,18 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     }
 
     private class ArrayDequeIterator implements Iterator<T> {
-
+        int count = 0;
         int ptr = (nextFirst + 1) % array.length;
 
         @Override
         public boolean hasNext() {
-            return ptr != nextLast;
+            return count < size;
         }
 
         @Override
         public T next() {
             T item = array[ptr];
-            ptr++;
+            ptr = (ptr + 1) % array.length;
             return item;
         }
     }

@@ -19,9 +19,9 @@ public class GuitarHeroLite {
             /* check if the user has typed a key; if so, process it */
             if (StdDraw.hasNextKeyTyped()) {
                 char key = StdDraw.nextKeyTyped();
-                if (key == 'a') {
+                if (key == 'A') {
                     stringA.pluck();
-                } else if (key == 'c') {
+                } else if (key == 'C') {
                     stringC.pluck();
                 }
             }
