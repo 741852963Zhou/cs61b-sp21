@@ -4,10 +4,10 @@ import java.util.Iterator;
 
 public class ArrayDeque<T> implements Deque<T>,Iterable<T>{
 
-    private int size;
-    private T[] array;
-    private int nextFirst;
-    private int nextLast;
+    protected int size;
+    protected T[] array;
+    protected int nextFirst;
+    protected int nextLast;
 
     public ArrayDeque(){
         size = 0;
@@ -18,7 +18,7 @@ public class ArrayDeque<T> implements Deque<T>,Iterable<T>{
 
     private class ArrayDequeIterator implements Iterator<T>{
 
-        int ptr = nextFirst+1;
+        int ptr = (nextFirst+1)%array.length;
 
         @Override
         public boolean hasNext() {
@@ -132,5 +132,25 @@ public class ArrayDeque<T> implements Deque<T>,Iterable<T>{
     @Override
     public Iterator<T> iterator() {
         return new ArrayDequeIterator();
+    }
+
+    @Override
+    public boolean equals(Object o){
+        if(o == this){
+            return true;
+        }
+        if(!(o instanceof Deque)){
+            return false;
+        }
+        Deque<?> other = (Deque<?>) o;
+        if(other.size() != size){
+            return false;
+        }
+        for(int i = 0;i<size;i++){
+            if(!(this.get(i).equals(other.get(i)))){
+                return false;
+            }
+        }
+        return true;
     }
 }
