@@ -9,7 +9,7 @@ public class LinkedListDeque<T> implements Deque<T>,Iterable<T>{
     public Node<T> sentinel;
     public int size;
 
-
+   //Node是一个节点，那么节点就不应该作为链表的整体，节点客观上可以模拟链表的部分功能，实际上却是违背自然语言逻辑的，不能用局部代替整体
     public static class Node<T>{
         public Node<T> pre;
         public Node<T> next;
@@ -21,6 +21,7 @@ public class LinkedListDeque<T> implements Deque<T>,Iterable<T>{
             this.pre = pre;
         }
     }
+
 
     private class lldIterator implements Iterator<T>{
 
