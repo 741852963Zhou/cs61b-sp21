@@ -1,34 +1,33 @@
 package deque;
 
-import java.util.Collection;
-import deque.Deque;
 import java.util.Iterator;
 
-public class LinkedListDeque<T> implements Deque<T>,Iterable<T>{
+public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
 
-    public Node<T> sentinel;
-    public int size;
+    private final Node<T> sentinel;
+    private int size;
 
-   //Node是一个节点，那么节点就不应该作为链表的整体，节点客观上可以模拟链表的部分功能，实际上却是违背自然语言逻辑的，不能用局部代替整体
-    public static class Node<T>{
+    //Node是一个节点，那么节点就不应该作为链表的整体，节点客观上可以模拟链表的部分功能，实际上却是违背自然语言逻辑的，不能用局部代替整体
+    public static class Node<T> {
         public Node<T> pre;
         public Node<T> next;
         public T item;
 
-        public Node(T item,Node<T> next,Node<T> pre){
+        public Node(T item, Node<T> next, Node<T> pre) {
             this.item = item;
             this.next = next;
             this.pre = pre;
         }
     }
 
-
-    private class lldIterator implements Iterator<T>{
+    private class lldIterator implements Iterator<T> {
 
         private Node<T> ptr;
-        public  lldIterator(){
+
+        public lldIterator() {
             ptr = sentinel.next;
         }
+
         @Override
         public boolean hasNext() {
             return ptr != sentinel;
@@ -42,9 +41,9 @@ public class LinkedListDeque<T> implements Deque<T>,Iterable<T>{
         }
     }
 
-    public LinkedListDeque(){
+    public LinkedListDeque() {
         size = 0;
-        sentinel = new Node<>(null,null,null);
+        sentinel = new Node<>(null, null, null);
         sentinel.next = sentinel;
         sentinel.pre = sentinel;
     }
@@ -52,7 +51,7 @@ public class LinkedListDeque<T> implements Deque<T>,Iterable<T>{
     @Override
     public void addFirst(T item) {
         Node<T> currentNode = sentinel.next;
-        sentinel.next = new Node<>(item,currentNode,sentinel);
+        sentinel.next = new Node<>(item, currentNode, sentinel);
         currentNode.pre = sentinel.next;
         size++;
     }
@@ -60,15 +59,16 @@ public class LinkedListDeque<T> implements Deque<T>,Iterable<T>{
     @Override
     public void addLast(T item) {
         Node<T> currentNode = sentinel.pre;
-        sentinel.pre = new Node<>(item,sentinel,currentNode);
+        sentinel.pre = new Node<>(item, sentinel, currentNode);
         currentNode.next = sentinel.pre;
         size++;
     }
 
     @Override
     public boolean isEmpty() {
-        return size == 0;
+        return this.size() == 0;
     }
+
     @Override
     public int size() {
         return size;
@@ -84,7 +84,7 @@ public class LinkedListDeque<T> implements Deque<T>,Iterable<T>{
 
     @Override
     public T removeFirst() {
-        if(sentinel.next == sentinel){
+        if (sentinel.next == sentinel) {
             return null;
         }
         Node<T> currentNode = sentinel.next;
@@ -96,7 +96,7 @@ public class LinkedListDeque<T> implements Deque<T>,Iterable<T>{
 
     @Override
     public T removeLast() {
-        if(sentinel.pre == sentinel){
+        if (sentinel.pre == sentinel) {
             return null;
         }
         Node<T> currentNode = sentinel.pre;
@@ -109,7 +109,7 @@ public class LinkedListDeque<T> implements Deque<T>,Iterable<T>{
     @Override
     public T get(int index) {
         Node<T> ptr = sentinel;
-        for(int i = 0;i <= index;i++){
+        for (int i = 0; i <= index; i++) {
             ptr = ptr.next;
         }
         return ptr.item;
@@ -121,33 +121,33 @@ public class LinkedListDeque<T> implements Deque<T>,Iterable<T>{
     }
 
     @Override
-    public boolean equals(Object o){
-        if(o == this){
+    public boolean equals(Object o) {
+        if (o == this) {
             return true;
         }
-        if(!(o instanceof Deque)){
+        if (!(o instanceof Deque)) {
             return false;
         }
         Deque<?> other = (Deque<?>) o;
-        if(other.size() != size){
+        if (other.size() != size) {
             return false;
         }
-        for(int i = 0;i<size;i++){
-            if(!(this.get(i).equals(other.get(i)))){
+        for (int i = 0; i < size; i++) {
+            if (!(this.get(i).equals(other.get(i)))) {
                 return false;
             }
         }
         return true;
     }
 
-    public T getRecursive(int index){
-        return NodeRecursive(index,sentinel.next);
+    public T getRecursive(int index) {
+        return NodeRecursive(index, sentinel.next);
     }
 
-    private T NodeRecursive(int index,Node<T> node){
-        if(index == 0){
+    private T NodeRecursive(int index, Node<T> node) {
+        if (index == 0) {
             return node.item;
         }
-        return NodeRecursive(index - 1,node.next);
+        return NodeRecursive(index - 1, node.next);
     }
 }

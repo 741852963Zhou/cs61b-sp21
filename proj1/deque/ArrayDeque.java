@@ -29,37 +29,43 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         public T next() {
             T item = array[ptr];
             ptr = (ptr + 1) % array.length;
+            count++;
             return item;
         }
     }
 
-    private void ReSize(int size) {
+    private void resize(int size) {
         if (size == array.length) {
-            T[] NewArray = (T[]) new Object[array.length * 2];
+            T[] newArray = (T[]) new Object[array.length * 2];
             T[] copyArray = (T[]) new Object[array.length];
             int first = (nextFirst + 1) % array.length;
             System.arraycopy(array, first, copyArray, 0, array.length - first);
             System.arraycopy(array, 0, copyArray, array.length - first, first);
-            System.arraycopy(copyArray, 0, NewArray, array.length / 2, array.length);
+            System.arraycopy(copyArray, 0, newArray, array.length / 2, array.length);
             nextFirst = array.length / 2 - 1;
             nextLast = nextFirst + 1 + size;
-            array = NewArray;
+            array = newArray;
         }
     }
 
-    private void RemoveResize(int size) {
-        if (size <= array.length / 4 && size > 0) {
-            T[] NewArray = (T[]) new Object[array.length / 2];
-            int index = (nextFirst + 1) % array.length;
-            int k = 0;
-            for (int i = 0; i < size; i++) {
-                NewArray[k] = array[index];
-                index = (index + 1) % array.length;
-                k++;
+    private void removeResize(int newSize) { // 参数名建议改一下，避免歧义
+        if (size <= array.length / 4 && array.length > 8) { // 增加一个最小长度限制
+            T[] newArray = (T[]) new Object[array.length / 2];
+            int first = (nextFirst + 1) % array.length;
+            int last = (nextLast - 1 + array.length) % array.length;
+
+            if (first <= last) {
+                // 情况1：数据没有绕圈，一次复制即可
+                System.arraycopy(array, first, newArray, 0, size);
+            } else {
+                // 情况2：数据绕圈了，需要分两次复制
+                int headLength = array.length - first;
+                System.arraycopy(array, first, newArray, 0, headLength);
+                System.arraycopy(array, 0, newArray, headLength, size - headLength);
             }
-            nextFirst = NewArray.length - 1;
+            array = newArray;
+            nextFirst = array.length - 1;
             nextLast = size;
-            array = NewArray;
         }
     }
 
@@ -68,7 +74,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         array[nextFirst] = item;
         nextFirst = (array.length + nextFirst - 1) % array.length;
         size++;
-        ReSize(size);
+        resize(size);
     }
 
     @Override
@@ -76,7 +82,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         array[nextLast] = item;
         nextLast = (nextLast + 1) % array.length;
         size++;
-        ReSize(size);
+        resize(size);
     }
 
     @Override
@@ -101,12 +107,12 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     public T removeFirst() {
         if (size > 0) {
             int first = (nextFirst + 1) % array.length;
-            T FirstItem = array[first];
+            T firstItem = array[first];
             array[first] = null;
             nextFirst = (array.length + nextFirst + 1) % array.length;
             size--;
-            RemoveResize(size);
-            return FirstItem;
+            removeResize(size);
+            return firstItem;
         }
         return null;
     }
@@ -115,13 +121,12 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     public T removeLast() {
         if (size > 0) {
             int Last = (nextLast - 1 + array.length) % array.length;
-            T LastItem = array[Last];
+            T lastItem = array[Last];
             array[Last] = null;
             nextLast = (nextLast - 1 + array.length) % array.length;
-            ;
             size--;
-            RemoveResize(size);
-            return LastItem;
+            removeResize(size);
+            return lastItem;
         }
         return null;
     }
