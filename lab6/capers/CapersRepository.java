@@ -3,8 +3,6 @@ package capers;
 import java.io.File;
 import java.io.IOException;
 
-import static capers.Utils.*;
-
 /** A repository for Capers 
  * @author TODO
  * The structure of a Capers Repository is as follows:
@@ -50,9 +48,15 @@ public class CapersRepository {
      */
     public static void writeStory(String text) {
         // TODO
-        text = Utils.readContentsAsString(STORY_FOLDER) + "\n" + text;
-        Utils.writeContents(STORY_FOLDER,text);
-        System.out.println(text);
+        String oldText = Utils.readContentsAsString(STORY_FOLDER);
+        String newText;
+        if(oldText.isEmpty()){
+             newText = text;
+        } else{
+            newText = oldText + "\n" + text;
+        }
+        Utils.writeContents(STORY_FOLDER,newText);
+        System.out.println(newText);
     }
 
     /**
