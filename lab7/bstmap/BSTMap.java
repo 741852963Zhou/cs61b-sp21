@@ -19,7 +19,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K,V>{
         private BSTNode left;
         private BSTNode right;
 
-        BSTNode(K key,V value,BSTNode left,BSTNode right){
+        public BSTNode(K key,V value,BSTNode left,BSTNode right){
 
             this.key = key;
             this.value = value;
@@ -205,7 +205,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K,V>{
     private class BSTMapIterator implements Iterator<K>{
         Deque<BSTNode> Stack = new LinkedList<>();
 
-        BSTMapIterator(){
+        public BSTMapIterator(){
             pushLeftSpine(root);
         }
 
